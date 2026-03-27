@@ -2,8 +2,8 @@
 title: 项目架构全览
 inherits: docs/02-architecture/STANDARD.md
 status: active
-version: "0.5.3"
-last-updated: 2026-03-26
+version: "0.6.0"
+last-updated: 2026-03-27
 category: architecture
 related:
   - docs/02-architecture/STANDARD.md
@@ -16,7 +16,7 @@ related:
 
 # 项目架构全览
 
-> NestJS 生产级后端基线模板 v0.5.3。架构约束与文档规范见 [STANDARD.md](STANDARD.md)。
+> NestJS 生产级后端基线模板 v0.6.0（样品管管理系统）。架构约束与文档规范见 [STANDARD.md](STANDARD.md)。
 
 ---
 
@@ -65,11 +65,17 @@ flowchart TD
     subgraph BL["业务层"]
         direction LR
         AC["AppController\n/health /test/*"] --- ATC["AuthController\n/auth/*"] --- EC["ErrorCatalogController\n/errors"]
+        UC["UserController\n/user/*"] --- FC["FeedbackController\n/feedback/*"] --- FLC["FileController\n/file/*"]
+        RC["RoomController\n/root/*"] --- BC["BoxController\n/box/*"]
+        OC["OrganizationController\n/org/*"] --- RGC["ReagentController\n/reagent/*"]
     end
 
     subgraph SL["Service 层"]
         direction LR
         AS["AppService"] --- AUS["AuthService + TokenService"] --- RCS["RequestContextService"]
+        US["UserService + EmailCodeService"] --- FS["FeedbackService"] --- FLS["FileService"]
+        RMS["RoomService"] --- BS["BoxService"]
+        OS["OrganizationService + OrgUserService"] --- RGS["ReagentService"]
     end
 
     subgraph IL["Infrastructure 层"]
@@ -92,6 +98,8 @@ flowchart TD
 
 ## 3. 模块职责
 
+### 3.1 基础设施模块
+
 | 模块 | 路径 | 职责 |
 |------|------|------|
 | App | `src/app.*` | 全局中间件、拦截器、过滤器装配；健康检查 |
@@ -100,6 +108,20 @@ flowchart TD
 | Common | `src/common/` | 工具函数库、装饰器、`BusinessException`、`RequestContextService` |
 | Constants | `src/constants/` | 所有常量的唯一定义来源 |
 | Infra | `src/infra/` | `DatabaseService`（Prisma + PG）、存储抽象 |
+
+### 3.2 业务模块
+
+| 模块 | 路径 | 控制器前缀 | 端点数 | 职责 |
+|------|------|-----------|--------|------|
+| User | `src/modules/user/` | `/user` | 10 | 用户注册/登录、邮箱验证码、个人信息管理、密码修改 |
+| Feedback | `src/modules/feedback/` | `/feedback` | 1 | 反馈建议提交 |
+| File | `src/modules/file/` | `/file` | 1 | 文件上传（raw body，10MB 限制） |
+| Room | `src/modules/room/` | `/root` | 5 | 房间（存储位置层级）CRUD |
+| Box | `src/modules/box/` | `/box` | 16 | 盒子 CRUD、盒子别名、盒子图片、盒子操作日志 |
+| Organization | `src/modules/organization/` | `/org` | 17 | 组织 CRUD、成员管理（申请/邀请/踢出/退出/权限） |
+| Reagent | `src/modules/reagent/` | `/reagent` | 3 | 试剂查询与批量更新 |
+
+**端点统计**：业务模块 53 个 + 基础设施约 10 个 ≈ 63 个端点。
 
 ---
 
@@ -126,6 +148,8 @@ flowchart TD
 | 日志库 | Pino | 性能最优，原生 JSON，nestjs-pino 官方集成 |
 | 请求上下文 | AsyncLocalStorage | 无需手动传参，任意层级可访问请求 ID |
 | 验证库 | Zod 4 | TypeScript-first，运行时验证与类型推断统一 |
+| 数据库关系 | 组织为核心 | Room/Box/Reagent 均依附于 Organization，通过 `orgId` 隔离数据 |
+| 双认证体系 | Auth 模块 + User 模块 | Auth 处理 JWT 基础设施；User 处理业务级用户操作（邮箱登录、验证码等） |
 
 ---
 

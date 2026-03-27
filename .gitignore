@@ -150,3 +150,6 @@ prisma/generated/
 .obsidian
 
 config
+
+# Test uploads residue
+uploads/

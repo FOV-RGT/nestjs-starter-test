@@ -2,8 +2,8 @@
 title: 架构设计规范与约束
 inherits: docs/STANDARD.md
 status: active
-version: "0.5.3"
-last-updated: 2026-03-26
+version: "0.6.0"
+last-updated: 2026-03-27
 category: standard
 related:
   - docs/STANDARD.md

@@ -12,7 +12,17 @@ import { AppController, TestController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AllExceptionsFilter } from './app.filter.js';
 
-import { ErrorCatalogModule, AuthModule } from '@/modules/index.js';
+import {
+    ErrorCatalogModule,
+    AuthModule,
+    FeedbackModule,
+    RoomModule,
+    FileModule,
+    UserModule,
+    BoxModule,
+    OrganizationModule,
+    ReagentModule,
+} from '@/modules/index.js';
 
 import { envSchema } from '@/common/utils/index.js';
 
@@ -99,6 +109,13 @@ import pino from 'pino';
         }),
         ErrorCatalogModule,
         AuthModule,
+        FeedbackModule,
+        RoomModule,
+        FileModule,
+        UserModule,
+        BoxModule,
+        OrganizationModule,
+        ReagentModule,
     ],
     controllers: [AppController, TestController],
     providers: [

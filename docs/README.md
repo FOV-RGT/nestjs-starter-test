@@ -1,8 +1,8 @@
 ---
 title: 文档索引
 status: active
-version: "0.5.3"
-last-updated: 2026-03-26
+version: "0.6.0"
+last-updated: 2026-03-27
 category: index
 ---
 

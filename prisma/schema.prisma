@@ -13,8 +13,170 @@ model User {
   username     String   @unique
   email        String   @unique
   passwordHash String
+  nickName     String?
+  realName     String?
+  uid          String   @unique @default(ulid())
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  feedbacks       Feedback[]
+  rooms           Room[]
+  boxes           Box[]
+  boxAliases      BoxAlias[]
+  boxImages       BoxImage[]
+  boxLogs         BoxLog[]
+  orgCreated      Organization[]    @relation("OrgCreator")
+  orgMemberships  OrgUser[]
+  reagentLogs     BoxLog[]          @relation("ReagentLogUser")
+
   @@index([createdAt])
+}
+
+model Feedback {
+  id         String    @id @default(ulid())
+  content    String?
+  email      String?
+  imageList  String?
+  progress   Int       @default(0)
+  type       Int       @default(0)
+  createBy   String?
+  creator    User?     @relation(fields: [createBy], references: [id])
+  finishTime DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Room {
+  id            String   @id @default(ulid())
+  roomName      String?
+  roomDescribe  String?
+  parentId      String?
+  parent        Room?    @relation("RoomParent", fields: [parentId], references: [id])
+  children      Room[]   @relation("RoomParent")
+  isDelete      Int      @default(0)
+  createBy      String?
+  creator       User?    @relation(fields: [createBy], references: [id])
+  orgId         String
+  organization  Organization @relation(fields: [orgId], references: [id])
+  boxes         Box[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([orgId])
+}
+
+model Box {
+  id             String   @id @default(ulid())
+  name           String?
+  shortName      String?
+  introduce      String?
+  authorityLevel Int      @default(0)
+  way            Int      @default(0)
+  x              Int      @default(0)
+  y              Int      @default(0)
+  isDelete       Int      @default(0)
+  rootId         String?
+  room           Room?    @relation(fields: [rootId], references: [id])
+  createBy       String?
+  creator        User?    @relation(fields: [createBy], references: [id])
+  orgId          String
+  organization   Organization @relation(fields: [orgId], references: [id])
+  aliases        BoxAlias[]
+  images         BoxImage[]
+  logs           BoxLog[]
+  reagents       Reagent[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([orgId])
+}
+
+model BoxAlias {
+  id        String   @id @default(ulid())
+  aliasName String?
+  boxId     String
+  box       Box      @relation(fields: [boxId], references: [id])
+  createBy  String?
+  creator   User?    @relation(fields: [createBy], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([boxId])
+}
+
+model BoxImage {
+  id        String   @id @default(ulid())
+  url       String
+  boxId     String
+  box       Box      @relation(fields: [boxId], references: [id])
+  orgId     String
+  createBy  String?
+  creator   User?    @relation(fields: [createBy], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([boxId])
+}
+
+model BoxLog {
+  id         String   @id @default(ulid())
+  boxId      String
+  box        Box      @relation(fields: [boxId], references: [id])
+  orgId      String
+  action     String?
+  detail     String?
+  reagentId  String?
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  operatorId String?
+  operator   User?    @relation("ReagentLogUser", fields: [operatorId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@index([boxId])
+  @@index([reagentId])
+}
+
+model Organization {
+  id        String   @id @default(ulid())
+  name      String
+  introduce String?
+  member    Int      @default(0)
+  createBy  String?
+  creator   User?    @relation("OrgCreator", fields: [createBy], references: [id])
+  rooms     Room[]
+  boxes     Box[]
+  members   OrgUser[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrgUser {
+  id             String       @id @default(ulid())
+  orgId          String
+  organization   Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  role           Int          @default(0)
+  status         Int          @default(0)
+  message        String?
+  inviteType     String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([orgId, userId])
+  @@index([orgId])
+  @@index([userId])
+}
+
+model Reagent {
+  id        String   @id @default(ulid())
+  name      String?
+  remark    String?
+  x         Int      @default(0)
+  y         Int      @default(0)
+  boxId     String
+  box       Box      @relation(fields: [boxId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([boxId])
 }
